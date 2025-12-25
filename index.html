@@ -2,70 +2,78 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Game Room</title>
+  <title>Mini Casino</title>
 
-  <!-- Telegram -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- Socket.IO client -->
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
 
-<h2>Игровая — комната</h2>
-<div id="status"></div>
-<div id="pot">Банк: 0</div>
+<h2>🎮 Mini game</h2>
 
-<button onclick="makeBet()">Сделать ставку</button>
+<div id="user"></div>
+<div id="balance"></div>
+
+<hr>
+
+<h3>Выбор игры</h3>
+<select id="game">
+  <option value="dice">🎲 Dice</option>
+  <option value="roulette">🎡 Roulette</option>
+</select>
+
+<button onclick="createRoom()">Создать комнату</button>
+
+<hr>
+
+<h3>Войти в комнату</h3>
+<input id="roomId" placeholder="room-id">
+<button onclick="joinRoom()">Войти</button>
+
+<div id="room"></div>
 
 <script>
-  const tg = window.Telegram.WebApp;
+  const tg = Telegram.WebApp;
   tg.expand();
 
-  // 🔹 пользователь Telegram
-  const user = tg.initDataUnsafe.user || {
-    id: Math.random(),
-    first_name: "Guest"
-  };
+  const user = tg.initDataUnsafe.user;
+  const tgId = user.id;
+  const name = user.first_name;
 
-  const roomId = "room-1";
-
-  // 🔹 подключение к серверу
-  const socket = io("http://localhost:3000"); // В PROD — URL сервера
+  const socket = io("http://localhost:3000");
 
   socket.on("connect", () => {
-    document.getElementById("status").innerText =
-      "Подключён как " + user.first_name;
-
-    socket.emit("join_room", {
-      roomId,
-      user: {
-        id: user.id,
-        name: user.first_name
-      }
-    });
+    socket.emit("register", { tgId, name });
   });
+
+  socket.on("user_data", (data) => {
+    document.getElementById("user").innerText =
+      `👤 ${data.name} (ID: ${data.tgId})`;
+
+    document.getElementById("balance").innerText =
+      `💰 Баланс: ${data.balance}`;
+  });
+
+  function createRoom() {
+    const game = document.getElementById("game").value;
+    socket.emit("create_room", { tgId, game });
+  }
+
+  socket.on("room_created", ({ roomId }) => {
+    document.getElementById("room").innerText =
+      `🏠 Комната создана: ${roomId}`;
+  });
+
+  function joinRoom() {
+    const roomId = document.getElementById("roomId").value;
+    socket.emit("join_room", { tgId, roomId });
+  }
 
   socket.on("room_update", (room) => {
-    document.getElementById("pot").innerText =
-      "Банк: " + room.pot;
+    document.getElementById("room").innerText =
+      `🎮 Игра: ${room.game}
+👥 Игроков: ${room.players.length}`;
   });
-
-  socket.on("bet_made", (data) => {
-    document.getElementById("pot").innerText =
-      "Банк: " + data.pot;
-  });
-
-  function makeBet() {
-    socket.emit("bet", {
-      roomId,
-      amount: 10,
-      user: {
-        id: user.id,
-        name: user.first_name
-      }
-    });
-  }
 </script>
 
 </body>
