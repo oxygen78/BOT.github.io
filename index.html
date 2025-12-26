@@ -33,6 +33,7 @@
 <div id="room"></div>
 
 <script>
+  import {io} from 'socket.io-client'
   const tg = Telegram.WebApp;
   tg.expand();
 
@@ -40,9 +41,10 @@
   const tgId = user.id;
   const name = user.first_name;
 
-const socket = io("https://tg-casino-backend.onrender.com", {
+const socket = io("https://localhost:3000", {
   transports: ["websocket"]
 });
+
 
 
 socket.on("connect", () => {

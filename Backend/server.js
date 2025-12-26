@@ -4,6 +4,12 @@ import { Server } from "socket.io";
 import pkg from "pg";
 import dotenv from "dotenv";
 
+const iio = require("socket.io")(3000);
+iio.on("connection", socket => {
+  console.log(socket.is)
+})
+
+
 dotenv.config();
 const { Pool } = pkg;
 
