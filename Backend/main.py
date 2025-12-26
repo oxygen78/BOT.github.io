@@ -59,7 +59,7 @@ async def miniapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(
             text="Открыть приложение",
             web_app=WebAppInfo(
-                url="https://oxygen78.github.io/tgbot.github.io/"
+                url="https://oxygen78.github.io/BOT.github.io/"
             )
         )]
     ]
