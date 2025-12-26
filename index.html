@@ -36,15 +36,22 @@
   const tg = Telegram.WebApp;
   tg.expand();
 
-  const user = tg.initDataUnsafe.user;
+    const user = Telegram.WebApp.initDataUnsafe.user || { id: Math.random(), first_name: "Guest" };
   const tgId = user.id;
   const name = user.first_name;
 
-  const socket = io("http://localhost:3000");
+const socket = io("https://tg-casino-backend.onrender.com", {
+  transports: ["websocket"]
+});
 
-  socket.on("connect", () => {
-    socket.emit("register", { tgId, name });
+
+socket.on("connect", () => {
+  socket.emit("register", {
+    tgId: user.id,
+    username: user.username || null,
+    first_name: user.first_name || "User"
   });
+});
 
   socket.on("user_data", (data) => {
     document.getElementById("user").innerText =
